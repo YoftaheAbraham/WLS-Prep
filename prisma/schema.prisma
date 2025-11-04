@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  password        String
+  role            Role     @default(STUDENT)
+  invitationToken String?
+  results         Result[]
+  createdAt       DateTime @default(now())
+}
+
+model Exam {
+  id          String     @id @default(cuid())
+  title       String
+  duration    Int        // in minutes
+  canStart    Boolean    @default(false)
+  questions   Question[]
+  results     Result[]
+  passages    Passage[]
+  createdAt   DateTime   @default(now())
+}
+
+model Passage {
+  id        String     @id @default(cuid())
+  examId    String
+  exam      Exam       @relation(fields: [examId], references: [id], onDelete: Cascade)
+  content   String
+  questions Question[]
+  createdAt DateTime   @default(now())
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  examId        String
+  exam          Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  passageId     String?
+  passage       Passage? @relation(fields: [passageId], references: [id], onDelete: SetNull)
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctAnswer String
+  orderIndex    Int      @default(0) // for ordering questions
+  createdAt     DateTime @default(now())
+}
+
+model Result {
+  id         String   @id @default(cuid())
+  userId     String
+  examId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam       Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  score      Float    // percentage score
+  startTime  DateTime
+  endTime    DateTime
+  submittedAt DateTime @default(now())
+  answers    Answer[]
+  createdAt  DateTime @default(now())
+}
+
+model Answer {
+  id       String @id @default(cuid())
+  resultId String
+  result   Result @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  questionId String
+  selectedAnswer String
+  isCorrect Boolean
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
