@@ -4,6 +4,10 @@ import { prisma } from "@/lib/db"
 import Link from "next/link"
 import StudentNav from "@/components/student-nav"
 
+interface ResultExamId {
+  examId: string
+}
+
 export default async function StudentPage() {
   const user = await getCurrentUser()
 
@@ -18,7 +22,7 @@ export default async function StudentPage() {
       select: { examId: true },
       distinct: ["examId"],
     })
-    .then((results) => results.map((r) => r.examId))
+    .then((results: ResultExamId[]) => results.map((r) => r.examId))
 
   const exams = await prisma.exam.findMany({
     where: {
