@@ -36,45 +36,46 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   const [startTime] = useState(Date.now())
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const submitRef = useRef(false)
+  const answersRef = useRef<Record<string, string>>({});
   const router = useRouter()
   const [warningQuestionId, setWarningQuestionId] = useState<string | null>(null);
 
   // Update handleAnswer to clear warning automatically
   const handleAnswer = (answer: string) => {
     const questionId = exam.questions[currentQuestion].id;
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: answer,
-    }));
-
-    // Clear warning if this was the one
+    setAnswers(prev => {
+      const newAnswers = { ...prev, [questionId]: answer };
+      answersRef.current = newAnswers; // update ref
+      return newAnswers;
+    });
+  
     if (warningQuestionId === questionId) {
       setWarningQuestionId(null);
     }
-
-    // If this was the last unanswered question, go to last question for submission
-    const remaining = exam.questions.filter(q => !answers[q.id] && q.id !== questionId);
+  
+    const remaining = exam.questions.filter(q => !answersRef.current[q.id] && q.id !== questionId);
     if (remaining.length === 0) {
-      setCurrentQuestion(exam.questions.length - 1); // last page
+      setCurrentQuestion(exam.questions.length - 1);
     }
   };
+  
 
   const handleSubmit = async (forceSubmit = false) => {
-    console.log(answers);
-    const unanswered = exam.questions.filter(q => !answers[q.id]);
-
+    const currentAnswers = answersRef.current;
+    const unanswered = exam.questions.filter(q => !currentAnswers[q.id]);
+  
     if (unanswered.length > 0 && !forceSubmit) {
       const firstUnanswered = unanswered[0];
       setCurrentQuestion(exam.questions.findIndex(q => q.id === firstUnanswered.id));
       setWarningQuestionId(firstUnanswered.id);
       window.scrollTo({ top: 0, behavior: "smooth" });
-      return; // stop submission
+      return;
     }
-
+  
     if (submitRef.current || isSubmitting) return;
     submitRef.current = true;
     setIsSubmitting(true);
-
+  
     try {
       const res = await fetch("/api/student/submit-exam", {
         method: "POST",
@@ -82,11 +83,11 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
         body: JSON.stringify({
           examId: exam.id,
           userId,
-          answers,
+          answers: currentAnswers, // use the latest from ref
           startTime: new Date(startTime),
         }),
       });
-
+  
       if (res.ok) {
         const data = await res.json();
         setSubmitted(true);
@@ -101,6 +102,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
       setIsSubmitting(false);
     }
   };
+  
 
 
 
