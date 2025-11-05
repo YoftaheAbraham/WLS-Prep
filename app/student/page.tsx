@@ -8,6 +8,17 @@ interface ResultExamId {
   examId: string
 }
 
+interface Exam {
+  id: string
+  title: string
+  duration: number
+  canStart: boolean
+  createdAt: Date
+  _count: {
+    questions: number
+  }
+}
+
 export default async function StudentPage() {
   const user = await getCurrentUser()
 
@@ -24,7 +35,7 @@ export default async function StudentPage() {
     })
     .then((results: ResultExamId[]) => results.map((r) => r.examId))
 
-  const exams = await prisma.exam.findMany({
+  const exams: Exam[] = await prisma.exam.findMany({
     where: {
       canStart: true,
       id: { notIn: takenExamIds }, // Filter out exams student has already taken
@@ -64,7 +75,7 @@ export default async function StudentPage() {
             </div>
           ) : (
             <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {exams.map((exam) => (
+              {exams.map((exam: Exam) => (
                 <div
                   key={exam.id}
                   className="bg-card border border-border rounded-lg p-4 sm:p-6 hover:border-foreground/30 transition"
