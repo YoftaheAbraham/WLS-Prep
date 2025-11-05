@@ -19,13 +19,13 @@ export default async function StudentResultsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="bg-primary text-primary-foreground border-b border-border">
+      <nav className="bg-black text-white border-b border-black sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
           <h1 className="text-2xl font-bold text-center sm:text-left">LiqaPrep Student</h1>
           <div className="flex flex-wrap justify-center sm:justify-end items-center gap-3">
             <Link
               href="/student"
-              className="text-primary-foreground hover:underline text-sm sm:text-base"
+              className="text-white hover:underline text-sm sm:text-base"
             >
               Available Exams
             </Link>

@@ -35,10 +35,10 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-primary text-primary-foreground border-b border-border">
+      <nav className="bg-black text-white border-b border-black sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">LiqaPrep Student</h1>
-          <Link href="/student" className="text-primary-foreground hover:underline">
+          <Link href="/student" className="text-white hover:underline">
             Back to Exams
           </Link>
         </div>
@@ -70,9 +70,8 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             {allResults.slice(0, 10).map((res, idx) => (
               <div
                 key={res.id}
-                className={`flex justify-between items-center p-4 rounded ${
-                  res.id === result.id ? "bg-primary text-primary-foreground" : "bg-secondary bg-opacity-10"
-                }`}
+                className={`flex justify-between items-center p-4 rounded ${res.id === result.id ? "bg-primary text-primary-foreground" : "bg-secondary bg-opacity-10"
+                  }`}
               >
                 <div className="flex items-center gap-4">
                   <span className="font-bold text-lg">{idx + 1}</span>
