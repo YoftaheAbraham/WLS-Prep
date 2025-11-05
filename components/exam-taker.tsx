@@ -59,14 +59,16 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (forceSubmit = false) => {
+    console.log(answers);
     const unanswered = exam.questions.filter(q => !answers[q.id]);
-    if (unanswered.length > 0) {
+
+    if (unanswered.length > 0 && !forceSubmit) {
       const firstUnanswered = unanswered[0];
       setCurrentQuestion(exam.questions.findIndex(q => q.id === firstUnanswered.id));
       setWarningQuestionId(firstUnanswered.id);
       window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
+      return; // stop submission
     }
 
     if (submitRef.current || isSubmitting) return;
@@ -94,29 +96,31 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
         setIsSubmitting(false);
       }
     } catch (error) {
-      console.error("[v0] Submit error:", error);
+      console.error("Submit error:", error);
       submitRef.current = false;
       setIsSubmitting(false);
     }
   };
 
 
+
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleSubmit()
-          if (timerRef.current) clearInterval(timerRef.current)
-          return 0
+          handleSubmit(true); // force submission
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
-
+        return prev - 1;
+      });
+    }, 1000);
+  
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+  
 
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60

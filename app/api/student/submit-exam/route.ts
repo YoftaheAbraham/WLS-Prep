@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
   try {
     const { examId, answers, startTime } = await request.json()
 
+    console.log({ examId, answers, startTime });
+    
+
     const exam = await prisma.exam.findUnique({
       where: { id: examId },
       include: { questions: true },
@@ -20,17 +23,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 })
     }
 
-    // Calculate score
+    // Check timer limit + 5 minutes bonus (5 * 60 * 1000 ms)
+    const start = new Date(startTime).getTime()
+    const now = Date.now()
+    const examDurationMs = exam.duration * 60 * 1000
+    const bonusMs = 5 * 60 * 1000
+    if (now - start > examDurationMs + bonusMs) {
+      return NextResponse.json({ error: "Time limit exceeded" }, { status: 400 })
+    }
+
+    // Calculate score (unanswered = incorrect)
     let correctCount = 0
     const answerRecords = []
 
     for (const question of exam.questions) {
-      const userAnswer = answers[question.id] || "" // default to empty string if not answered
-      const isCorrect = userAnswer && userAnswer === question.correctAnswer
+      const userAnswer = answers[question.id] || "" // "" if unanswered
+      const isCorrect = userAnswer === question.correctAnswer
 
-      if (isCorrect) {
-        correctCount++
-      }
+      if (isCorrect) correctCount++
 
       answerRecords.push({
         questionId: question.id,
@@ -39,7 +49,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Calculate percentage over all questions, even unanswered
     const score = (correctCount / exam.questions.length) * 100
 
     const result = await prisma.result.create({
@@ -61,4 +70,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to submit exam" }, { status: 500 })
   }
 }
+
 
