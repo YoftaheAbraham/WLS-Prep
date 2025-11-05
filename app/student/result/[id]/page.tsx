@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import Link from "next/link"
 
-export default async function ResultPage({ params }: { params: { id: string } }) {
+export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const user = await getCurrentUser()
 
   if (!user || user.role !== "STUDENT") {
@@ -11,7 +12,7 @@ export default async function ResultPage({ params }: { params: { id: string } })
   }
 
   const result = await prisma.result.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       exam: true,
       user: true,

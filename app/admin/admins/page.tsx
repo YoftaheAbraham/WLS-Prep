@@ -5,10 +5,10 @@ import type React from "react"
 import { useState } from "react"
 import AdminNav from "@/components/admin-nav"
 
-export default function AddStudentsPage() {
+export default function AddAdminsPage() {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
-  const [invitations, setInvitations] = useState<Array<{ email: string; token: string }>>([])
+  const [admins, setAdmins] = useState<Array<{ email: string; token: string; tempPassword: string }>>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -18,7 +18,7 @@ export default function AddStudentsPage() {
     const errors: Record<string, string> = {}
 
     if (!name.trim()) {
-      errors.name = "Student name is required"
+      errors.name = "Admin name is required"
     }
 
     if (!email.trim()) {
@@ -31,7 +31,7 @@ export default function AddStudentsPage() {
     return Object.keys(errors).length === 0
   }
 
-  const handleAddStudent = async (e: React.FormEvent) => {
+  const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
@@ -40,7 +40,7 @@ export default function AddStudentsPage() {
     setSuccess("")
 
     try {
-      const res = await fetch("/api/admin/students", {
+      const res = await fetch("/api/admin/admins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email }),
@@ -48,32 +48,33 @@ export default function AddStudentsPage() {
 
       if (res.ok) {
         const data = await res.json()
-        setInvitations([...invitations, { email, token: data.token }])
+        setAdmins([...admins, { email, token: data.token, tempPassword: data.tempPassword }])
         setEmail("")
         setName("")
         setFormErrors({})
-        setSuccess(`Invitation sent to ${email}`)
+        setSuccess(`Admin account created for ${email}`)
       } else {
         const err = await res.json()
-        setError(err.error || "Failed to generate invitation")
+        setError(err.error || "Failed to create admin")
       }
     } catch (err) {
-      setError("Failed to generate invitation")
+      setError("Failed to create admin")
     } finally {
       setLoading(false)
     }
   }
 
-  const copyToClipboard = (token: string) => {
-    navigator.clipboard.writeText(token)
-    setSuccess("Token copied to clipboard!")
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text)
+    setSuccess(`${type} copied to clipboard!`)
   }
 
   return (
     <div className="min-h-screen bg-background">
       <AdminNav />
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-foreground mb-8">Add Students</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Add Admin</h1>
+        <p className="text-muted-foreground mb-8">Create new admin accounts with invitation tokens</p>
 
         {error && (
           <div className="bg-destructive bg-opacity-10 border border-destructive rounded p-4 mb-6 text-destructive">
@@ -87,11 +88,11 @@ export default function AddStudentsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Form */}
-          <form onSubmit={handleAddStudent} className="bg-card border border-border rounded-lg p-6 space-y-4 h-fit">
-            <h2 className="text-lg font-semibold text-foreground">Generate Invitation</h2>
+          <form onSubmit={handleAddAdmin} className="bg-card border border-border rounded-lg p-6 space-y-4 h-fit">
+            <h2 className="text-lg font-semibold text-foreground">Create Admin Account</h2>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Student Name</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Admin Name</label>
               <input
                 type="text"
                 value={name}
@@ -105,7 +106,7 @@ export default function AddStudentsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Student Email</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Admin Email</label>
               <input
                 type="email"
                 value={email}
@@ -123,27 +124,44 @@ export default function AddStudentsPage() {
               disabled={loading}
               className="w-full bg-primary text-primary-foreground py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Generating..." : "Generate Invitation"}
+              {loading ? "Creating..." : "Create Admin"}
             </button>
           </form>
 
-          {/* Invitations List */}
+          {/* Created Admins List */}
           <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Generated Invitations</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Created Admins ({admins.length})</h2>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {invitations.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No invitations generated yet</p>
+              {admins.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No admins created yet</p>
               ) : (
-                invitations.map((inv, idx) => (
+                admins.map((admin, idx) => (
                   <div key={idx} className="bg-background border border-border rounded p-3">
-                    <p className="text-sm font-medium text-foreground">{inv.email}</p>
-                    <p className="text-xs text-muted-foreground break-all font-mono mt-2">{inv.token}</p>
-                    <button
-                      onClick={() => copyToClipboard(inv.token)}
-                      className="text-xs mt-2 text-primary hover:underline"
-                    >
-                      Copy Token
-                    </button>
+                    <p className="text-sm font-medium text-foreground">{admin.email}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-muted-foreground">Temp Password:</p>
+                      <p className="text-xs text-muted-foreground break-all font-mono bg-secondary bg-opacity-20 p-2 rounded">
+                        {admin.tempPassword}
+                      </p>
+                      <button
+                        onClick={() => copyToClipboard(admin.tempPassword, "Password")}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Copy Password
+                      </button>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground">Invitation Token:</p>
+                      <p className="text-xs text-muted-foreground break-all font-mono bg-secondary bg-opacity-20 p-2 rounded mt-1">
+                        {admin.token}
+                      </p>
+                      <button
+                        onClick={() => copyToClipboard(admin.token, "Token")}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Copy Token
+                      </button>
+                    </div>
                   </div>
                 ))
               )}

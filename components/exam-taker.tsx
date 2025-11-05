@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 
 interface Question {
@@ -29,9 +29,13 @@ interface ExamTakerProps {
 export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [timeLeft, setTimeLeft] = useState(exam.duration * 60) // in seconds
+  const [timeLeft, setTimeLeft] = useState(exam.duration * 60 + 25) // in seconds
   const [submitted, setSubmitted] = useState(false)
+  const [startTime] = useState(Date.now())
+  // ✅ Type-safe for both Node.js and browser
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const router = useRouter()
+
 
   const handleAnswer = (answer: string) => {
     setAnswers({
@@ -41,6 +45,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   }
 
   const handleSubmit = async () => {
+    if (submitted) return
     setSubmitted(true)
 
     try {
@@ -51,34 +56,38 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
           examId: exam.id,
           userId,
           answers,
+          startTime: new Date(startTime),
         }),
       })
 
       if (res.ok) {
         const data = await res.json()
         router.push(`/student/result/${data.resultId}`)
+      } else {
+        setSubmitted(false)
       }
     } catch (error) {
-      console.error(error)
+      console.error("[v0] Submit error:", error)
       setSubmitted(false)
     }
   }
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Auto-submit when time is up
           handleSubmit()
-          clearInterval(timer)
+          if (timerRef.current) clearInterval(timerRef.current)
           return 0
         }
         return prev - 1
       })
     }, 1000)
 
-    return () => clearInterval(timer)
-  }, [])
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [submitted])
 
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
@@ -93,7 +102,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
       <div className="bg-primary text-primary-foreground border-b border-border sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">{exam.title}</h1>
-          <div className="text-lg font-mono font-bold">
+          <div className={`text-lg font-mono font-bold ${timeLeft < 300 ? "text-red-400" : ""}`}>
             {minutes}:{seconds.toString().padStart(2, "0")}
           </div>
         </div>
@@ -118,7 +127,9 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
         <div className="bg-card border border-border rounded-lg p-8 mb-8">
           {question.passage && (
             <div className="bg-secondary bg-opacity-10 border-l-4 border-secondary p-4 mb-6">
-              <p className="text-sm text-foreground leading-relaxed">{question.passage.content}</p>
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-mono">
+                {question.passage.content}
+              </p>
             </div>
           )}
 
@@ -164,13 +175,12 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
               <button
                 key={idx}
                 onClick={() => setCurrentQuestion(idx)}
-                className={`w-10 h-10 rounded font-medium ${
-                  idx === currentQuestion
+                className={`w-10 h-10 rounded font-medium ${idx === currentQuestion
                     ? "bg-primary text-primary-foreground"
                     : answers[exam.questions[idx].id]
                       ? "bg-secondary text-secondary-foreground"
                       : "bg-border text-foreground"
-                }`}
+                  }`}
               >
                 {idx + 1}
               </button>

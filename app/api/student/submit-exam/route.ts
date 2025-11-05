@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { examId, answers } = await request.json()
+    const { examId, answers, startTime } = await request.json()
 
     const exam = await prisma.exam.findUnique({
       where: { id: examId },
@@ -41,13 +41,12 @@ export async function POST(request: NextRequest) {
 
     const score = (correctCount / exam.questions.length) * 100
 
-    // Create result
     const result = await prisma.result.create({
       data: {
         userId: user.id,
         examId,
         score,
-        startTime: new Date(Date.now() - exam.duration * 60 * 1000), // Approximate start time
+        startTime: new Date(startTime),
         endTime: new Date(),
         answers: {
           create: answerRecords,
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ resultId: result.id })
   } catch (error) {
-    console.error(error)
+    console.error("[v0] Submit error:", error)
     return NextResponse.json({ error: "Failed to submit exam" }, { status: 500 })
   }
 }

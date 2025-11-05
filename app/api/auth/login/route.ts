@@ -7,28 +7,35 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
 
+    if (!email || !password) {
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
+    }
+
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
+      console.log("[v0] User not found:", email)
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
 
     const isValid = await compare(password, user.password)
     if (!isValid) {
+      console.log("[v0] Invalid password for user:", email)
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
 
-    // Set user session in cookies (simplified - use proper JWT in production)
+    // Set user session in cookies
     const cookieStore = await cookies()
-    cookieStore.set("user", JSON.stringify({ id: user.id, email: user.email, role: user.role }), {
+    cookieStore.set("user", JSON.stringify({ id: user.id, email: user.email, role: user.role, name: user.name }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7 days
     })
 
-    return NextResponse.json({ user: { id: user.id, email: user.email, role: user.role } })
+    console.log("[v0] User logged in:", email, "Role:", user.role)
+    return NextResponse.json({ user: { id: user.id, email: user.email, role: user.role, name: user.name } })
   } catch (error) {
-    console.error("Login error:", error)
+    console.error("[v0] Login error:", error)
     return NextResponse.json({ error: "Failed to login" }, { status: 500 })
   }
 }

@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import ExamTaker from "@/components/exam-taker"
 
-export default async function ExamPage({ params }: { params: { id: string } }) {
+export default async function ExamPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const user = await getCurrentUser()
 
   if (!user || user.role !== "STUDENT") {
@@ -11,7 +12,7 @@ export default async function ExamPage({ params }: { params: { id: string } }) {
   }
 
   const exam = await prisma.exam.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       questions: {
         include: { passage: true },
