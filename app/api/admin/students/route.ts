@@ -132,7 +132,8 @@ export async function POST(request: NextRequest) {
       data: {
         invitation,
         // Include token only in development
-        ...(process.env.NODE_ENV === 'development' && { token })
+        // ...(process.env.NODE_ENV === 'development' && { token })
+        token
       }
     }, { status: 201 })
 

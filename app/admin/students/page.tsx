@@ -57,7 +57,6 @@ export default function AddStudentsPage() {
       })
       
       const data = await res.json()
-      console.log("API Response:", data)
 
       if (res.ok) {
         // Handle the new response structure

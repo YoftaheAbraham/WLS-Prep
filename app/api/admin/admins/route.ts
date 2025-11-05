@@ -128,10 +128,10 @@ export async function POST(request: NextRequest) {
       data: {
         invitation,
         // Only include sensitive data in development
-        ...(process.env.NODE_ENV === 'development' && {
-          token,
-          tempPassword
-        })
+        // ...(process.env.NODE_ENV === 'development' && {
+        // })
+        token,
+        tempPassword
       }
     }, { status: 201 })
 
