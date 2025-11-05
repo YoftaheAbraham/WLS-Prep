@@ -21,7 +21,7 @@ export default function CreateExamPage() {
       const res = await fetch("/api/admin/exams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, duration: Number.parseInt(duration as any) }),
+        body: JSON.stringify({ title, duration }),
       })
 
       if (res.ok) {
