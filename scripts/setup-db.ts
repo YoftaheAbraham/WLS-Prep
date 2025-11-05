@@ -6,19 +6,18 @@ const prisma = new PrismaClient()
 async function main() {
   console.log("Setting up database...")
 
-  const hashedPassword = await hash("pass1234", 10)
+  const hashedPassword = await hash("liqaprepadmin@123", 10)
 
   const admin = await prisma.user.upsert({
-    where: { email: "jofab08@gmail.com" },
+    where: { email: "liqaprep@gmail.com" },
     update: {},
     create: {
       name: "Default Admin",
-      email: "jofab08@gmail.com",
+      email: "liqaprep@gmail.com",
       password: hashedPassword,
       role: "ADMIN",
     },
   })
-
   console.log("Created admin:", admin)
 
   // Create a sample exam
