@@ -4,6 +4,13 @@ import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import AdminNav from "@/components/admin-nav"
 
+interface Exam {
+  id: string
+  title: string
+  duration: number
+  canStart: boolean
+}
+
 interface StudentResult {
   id: string
   userId: string
@@ -31,7 +38,7 @@ export default function ExamResultsPage() {
   const router = useRouter()
   const examId = params.id as string
 
-  const [exam, setExam] = useState<any>(null)
+  const [exam, setExam] = useState<Exam | null>(null)
   const [results, setResults] = useState<StudentResult[]>([])
   const [selectedResult, setSelectedResult] = useState<StudentResult | null>(null)
   const [loading, setLoading] = useState(true)
