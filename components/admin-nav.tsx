@@ -5,6 +5,11 @@ import Link from "next/link"
 import ThemeToggle from "./theme-toggle"
 import { useState } from "react"
 
+interface NavLink {
+  href: string
+  label: string
+}
+
 export default function AdminNav() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -22,7 +27,7 @@ export default function AdminNav() {
     setIsMobileMenuOpen(false)
   }
 
-  const navLinks = [
+  const navLinks: NavLink[] = [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/exams", label: "Exams" },
     { href: "/admin/users", label: "Users" },
@@ -49,7 +54,7 @@ export default function AdminNav() {
             {navLinks.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href as any}
                 className="hover:opacity-80 transition-opacity text-sm lg:text-base"
               >
                 {link.label}
@@ -93,7 +98,7 @@ export default function AdminNav() {
             {navLinks.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href as any}
                 className="hover:opacity-80 transition-opacity py-2 text-sm"
                 onClick={closeMobileMenu}
               >
