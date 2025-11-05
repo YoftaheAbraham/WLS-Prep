@@ -171,14 +171,14 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
           </button>
         </form>
 
-        <div className="bg-destructive bg-opacity-10 border border-destructive rounded-lg p-6">
+        <div className="border border-destructive rounded-lg p-6">
           <h2 className="text-lg font-semibold text-destructive mb-4">Danger Zone</h2>
           <p className="text-sm text-muted-foreground mb-4">
             Delete this exam permanently. This cannot be undone. You can only delete exams that haven't started.
           </p>
           <button
             onClick={handleDelete}
-            className="w-full bg-destructive text-destructive-foreground py-2 rounded font-medium hover:opacity-90"
+            className="w-full bg-destructive text-white py-2 rounded font-medium hover:opacity-90"
           >
             Delete Exam
           </button>

@@ -44,11 +44,11 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-card border border-border rounded-lg p-8 mb-8">
+      <div className="max-w-4xl mx-auto p-2">
+        <div className="bg-card border border-border rounded-lg p-4 mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-4">{result.exam.title} - Results</h1>
 
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="flex flex-wrap gap-4 mb-8">
             <div className="bg-secondary bg-opacity-10 rounded-lg p-6 text-center">
               <p className="text-sm text-muted-foreground mb-2">Your Score</p>
               <p className="text-4xl font-bold text-foreground">{result.score.toFixed(1)}%</p>
