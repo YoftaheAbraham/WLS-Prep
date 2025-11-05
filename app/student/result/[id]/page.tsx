@@ -3,6 +3,15 @@ import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import Link from "next/link"
 
+interface ResultWithUser {
+  id: string
+  score: number
+  userId: string
+  user: {
+    name: string | null
+  }
+}
+
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const user = await getCurrentUser()
@@ -25,13 +34,13 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   }
 
   // Get all results for this exam to determine ranking
-  const allResults = await prisma.result.findMany({
+  const allResults: ResultWithUser[] = await prisma.result.findMany({
     where: { examId: result.examId },
     include: { user: true },
     orderBy: { score: "desc" },
   })
 
-  const userRank = allResults.findIndex((r) => r.id === result.id) + 1
+  const userRank = allResults.findIndex((r: ResultWithUser) => r.id === result.id) + 1
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,7 +76,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
           <h2 className="text-xl font-semibold text-foreground mb-4">Student Rankings</h2>
           <div className="space-y-2">
-            {allResults.slice(0, 10).map((res, idx) => (
+            {allResults.slice(0, 10).map((res: ResultWithUser, idx: number) => (
               <div
                 key={res.id}
                 className={`flex justify-between items-center p-4 rounded ${res.id === result.id ? "bg-primary text-primary-foreground" : "bg-secondary bg-opacity-10"
