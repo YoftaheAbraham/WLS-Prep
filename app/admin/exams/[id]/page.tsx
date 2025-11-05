@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
@@ -23,13 +22,19 @@ interface Question {
   passage?: Passage | null
 }
 
+interface Exam {
+  id: string
+  title: string
+  duration: number
+  canStart: boolean
+}
+
 export default function EditExamPage() {
-  const params: { id: string } = useParams()
-  const [exam, setExam] = useState<any>(null)
+  const params = useParams()
+  const [exam, setExam] = useState<Exam | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
   const [passages, setPassages] = useState<Passage[]>([])
-  const [newQuestion, setNewQuestion] = useState<Question>({
-    id: "",
+  const [newQuestion, setNewQuestion] = useState<Omit<Question, "id"> & { id?: string }>({
     questionText: "",
     optionA: "",
     optionB: "",
@@ -96,7 +101,6 @@ export default function EditExamPage() {
         const data = await res.json()
         setQuestions([...questions, data.question])
         setNewQuestion({
-          id: "",
           questionText: "",
           optionA: "",
           optionB: "",
@@ -141,7 +145,6 @@ export default function EditExamPage() {
         const data = await res.json()
         setQuestions(questions.map((q) => (q.id === editingQuestionId ? data.question : q)))
         setNewQuestion({
-          id: "",
           questionText: "",
           optionA: "",
           optionB: "",
@@ -383,7 +386,7 @@ export default function EditExamPage() {
                     <label className="block text-sm font-medium text-foreground mb-2">Option {opt}</label>
                     <input
                       type="text"
-                      value={newQuestion[`option${opt}` as keyof Question] as string}
+                      value={newQuestion[`option${opt}` as keyof Omit<Question, "id">] as string}
                       onChange={(e) => {
                         setNewQuestion({ ...newQuestion, [`option${opt}`]: e.target.value })
                         if (formErrors[`option${opt}`]) setFormErrors({ ...formErrors, [`option${opt}`]: "" })
@@ -422,7 +425,7 @@ export default function EditExamPage() {
                       <div key={opt} className="flex items-start gap-2 text-sm">
                         <span className="font-mono font-semibold">{opt}.</span>
                         <span className="text-foreground">
-                          {(newQuestion[`option${opt}` as keyof Question] as string) || `Option ${opt}`}
+                          {(newQuestion[`option${opt}` as keyof Omit<Question, "id">] as string) || `Option ${opt}`}
                         </span>
                         {opt === newQuestion.correctAnswer && (
                           <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Correct</span>
@@ -452,7 +455,6 @@ export default function EditExamPage() {
               <button
                 onClick={() => {
                   setNewQuestion({
-                    id: "",
                     questionText: "",
                     optionA: "",
                     optionB: "",
