@@ -1,13 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
 
-export default function ExamSettingsPage() {
-  const params: { id: string } = useParams()
+export default function ExamSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const [exam, setExam] = useState<any>(null)
   const [title, setTitle] = useState("")
   const [duration, setDuration] = useState(0)
@@ -16,11 +15,13 @@ export default function ExamSettingsPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const router = useRouter()
+  const resolvedParams = useParams()
+  const examId = resolvedParams.id as string
 
   useEffect(() => {
     const fetchExam = async () => {
       try {
-        const res = await fetch(`/api/admin/exams/${params.id}`)
+        const res = await fetch(`/api/admin/exams/${examId}`)
         if (res.ok) {
           const data = await res.json()
           setExam(data.exam)
@@ -34,7 +35,7 @@ export default function ExamSettingsPage() {
       setLoading(false)
     }
     fetchExam()
-  }, [params.id])
+  }, [examId])
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,7 +53,7 @@ export default function ExamSettingsPage() {
     }
 
     try {
-      const res = await fetch(`/api/admin/exams/${params.id}`, {
+      const res = await fetch(`/api/admin/exams/${examId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,7 +83,7 @@ export default function ExamSettingsPage() {
     }
 
     try {
-      const res = await fetch(`/api/admin/exams/${params.id}/delete`, {
+      const res = await fetch(`/api/admin/exams/${examId}/delete`, {
         method: "DELETE",
       })
 
@@ -103,6 +104,13 @@ export default function ExamSettingsPage() {
     <div className="min-h-screen bg-background">
       <AdminNav />
       <div className="max-w-2xl mx-auto p-6">
+        <button
+          onClick={() => router.back()}
+          className="text-sm text-primary hover:underline mb-4 flex items-center gap-1"
+        >
+          ← Back
+        </button>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">{exam?.title}</h1>
           <p className="text-muted-foreground">Configure exam settings</p>

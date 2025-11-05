@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
+import { Loader2 } from "lucide-react"
 
 interface Passage {
   id: string
@@ -23,7 +24,8 @@ interface Question {
   passage?: Passage | null
 }
 
-export default function EditExamPage({ params }: { params: { id: string } }) {
+export default function EditExamPage() {
+  const params: { id: string } = useParams()
   const [exam, setExam] = useState<any>(null)
   const [questions, setQuestions] = useState<Question[]>([])
   const [passages, setPassages] = useState<Passage[]>([])
@@ -42,6 +44,7 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -110,6 +113,52 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
       }
     } catch (err) {
       setError("Failed to add question")
+    }
+  }
+
+  const handleEditQuestion = async (questionId: string) => {
+    const questionToEdit = questions.find((q) => q.id === questionId)
+    if (questionToEdit) {
+      setNewQuestion(questionToEdit)
+      setEditingQuestionId(questionId)
+      // Scroll to form
+      const formElement = document.querySelector("[data-question-form]")
+      formElement?.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+
+  const handleUpdateQuestion = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validateQuestion() || !editingQuestionId) return
+
+    try {
+      const res = await fetch(`/api/admin/exams/${params.id}/questions/${editingQuestionId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newQuestion),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setQuestions(questions.map((q) => (q.id === editingQuestionId ? data.question : q)))
+        setNewQuestion({
+          id: "",
+          questionText: "",
+          optionA: "",
+          optionB: "",
+          optionC: "",
+          optionD: "",
+          correctAnswer: "A",
+        })
+        setEditingQuestionId(null)
+        setFormErrors({})
+        setError("")
+      } else {
+        const err = await res.json()
+        setError(err.error || "Failed to update question")
+      }
+    } catch (err) {
+      setError("Failed to update question")
     }
   }
 
@@ -196,6 +245,13 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-background">
       <AdminNav />
       <div className="max-w-6xl mx-auto p-6">
+        <button
+          onClick={() => router.back()}
+          className="text-sm text-primary hover:underline mb-4 flex items-center gap-1"
+        >
+          ← Back
+        </button>
+
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">{exam?.title}</h1>
@@ -287,9 +343,9 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
             )}
 
             {/* Add Question Form with Live Preview */}
-            <div className="bg-card border border-border rounded-lg p-6">
+            <div className="bg-card border border-border rounded-lg p-6" data-question-form>
               <h2 className="text-lg font-semibold text-foreground mb-4">Add Question</h2>
-              <form onSubmit={handleAddQuestion} className="space-y-4">
+              <form onSubmit={editingQuestionId ? handleUpdateQuestion : handleAddQuestion} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Question Text</label>
                   <textarea
@@ -381,10 +437,38 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
                   type="submit"
                   className="w-full bg-primary text-primary-foreground py-2 rounded font-medium hover:opacity-90"
                 >
-                  Add Question
+                  {editingQuestionId ? "Update Question" : "Add Question"}
                 </button>
               </form>
             </div>
+
+            {/* Form heading to show edit mode */}
+            {editingQuestionId && (
+              <div className="bg-primary bg-opacity-10 border border-primary rounded p-4 mb-6 text-primary">
+                Editing Question - Click save to update or cancel to discard changes
+              </div>
+            )}
+
+            {editingQuestionId && (
+              <button
+                onClick={() => {
+                  setNewQuestion({
+                    id: "",
+                    questionText: "",
+                    optionA: "",
+                    optionB: "",
+                    optionC: "",
+                    optionD: "",
+                    correctAnswer: "A",
+                  })
+                  setEditingQuestionId(null)
+                  setFormErrors({})
+                }}
+                className="w-full bg-secondary text-secondary-foreground py-2 rounded font-medium hover:opacity-90 mt-2"
+              >
+                Cancel Edit
+              </button>
+            )}
           </div>
 
           {/* Questions List Sidebar */}
@@ -394,11 +478,13 @@ export default function EditExamPage({ params }: { params: { id: string } }) {
               {questions.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="bg-background border border-border rounded p-3 hover:bg-secondary hover:bg-opacity-10 cursor-pointer"
+                  onClick={() => handleEditQuestion(q.id)}
+                  className="bg-background border border-border rounded p-3 hover:bg-secondary hover:bg-opacity-10 cursor-pointer transition"
                 >
                   <p className="text-xs font-mono text-muted-foreground mb-1">Q{idx + 1}</p>
                   <p className="text-sm text-foreground line-clamp-2">{q.questionText}</p>
                   {q.passage && <p className="text-xs text-muted-foreground mt-1">Has passage</p>}
+                  <p className="text-xs text-primary mt-1 font-semibold">Click to edit</p>
                 </div>
               ))}
             </div>

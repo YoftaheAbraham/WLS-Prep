@@ -32,10 +32,8 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   const [timeLeft, setTimeLeft] = useState(exam.duration * 60 + 25) // in seconds
   const [submitted, setSubmitted] = useState(false)
   const [startTime] = useState(Date.now())
-  // ✅ Type-safe for both Node.js and browser
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timerRef = useRef<NodeJS.Timeout>()
   const router = useRouter()
-
 
   const handleAnswer = (answer: string) => {
     setAnswers({
@@ -175,12 +173,13 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
               <button
                 key={idx}
                 onClick={() => setCurrentQuestion(idx)}
-                className={`w-10 h-10 rounded font-medium ${idx === currentQuestion
+                className={`w-10 h-10 rounded font-medium ${
+                  idx === currentQuestion
                     ? "bg-primary text-primary-foreground"
                     : answers[exam.questions[idx].id]
                       ? "bg-secondary text-secondary-foreground"
                       : "bg-border text-foreground"
-                  }`}
+                }`}
               >
                 {idx + 1}
               </button>
