@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
     const answerRecords = []
 
     for (const question of exam.questions) {
-      const userAnswer = answers[question.id]
-      const isCorrect = userAnswer === question.correctAnswer
+      const userAnswer = answers[question.id] || "" // default to empty string if not answered
+      const isCorrect = userAnswer && userAnswer === question.correctAnswer
 
       if (isCorrect) {
         correctCount++
@@ -34,11 +34,12 @@ export async function POST(request: NextRequest) {
 
       answerRecords.push({
         questionId: question.id,
-        selectedAnswer: userAnswer || "",
+        selectedAnswer: userAnswer,
         isCorrect,
       })
     }
 
+    // Calculate percentage over all questions, even unanswered
     const score = (correctCount / exam.questions.length) * 100
 
     const result = await prisma.result.create({
@@ -60,3 +61,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to submit exam" }, { status: 500 })
   }
 }
+

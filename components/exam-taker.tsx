@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { Loader2 } from "lucide-react"
 
 interface Question {
   id: string
@@ -29,22 +30,48 @@ interface ExamTakerProps {
 export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [timeLeft, setTimeLeft] = useState(exam.duration * 60 + 25) // in seconds
+  const [timeLeft, setTimeLeft] = useState(exam.duration * 60 + 30) // 30 seconds buffer for fetching
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [startTime] = useState(Date.now())
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const submitRef = useRef(false)
   const router = useRouter()
+  const [warningQuestionId, setWarningQuestionId] = useState<string | null>(null);
 
+  // Update handleAnswer to clear warning automatically
   const handleAnswer = (answer: string) => {
-    setAnswers({
-      ...answers,
-      [exam.questions[currentQuestion].id]: answer,
-    })
-  }
+    const questionId = exam.questions[currentQuestion].id;
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: answer,
+    }));
+
+    // Clear warning if this was the one
+    if (warningQuestionId === questionId) {
+      setWarningQuestionId(null);
+    }
+
+    // If this was the last unanswered question, go to last question for submission
+    const remaining = exam.questions.filter(q => !answers[q.id] && q.id !== questionId);
+    if (remaining.length === 0) {
+      setCurrentQuestion(exam.questions.length - 1); // last page
+    }
+  };
 
   const handleSubmit = async () => {
-    if (submitted) return
-    setSubmitted(true)
+    const unanswered = exam.questions.filter(q => !answers[q.id]);
+    if (unanswered.length > 0) {
+      const firstUnanswered = unanswered[0];
+      setCurrentQuestion(exam.questions.findIndex(q => q.id === firstUnanswered.id));
+      setWarningQuestionId(firstUnanswered.id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (submitRef.current || isSubmitting) return;
+    submitRef.current = true;
+    setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/student/submit-exam", {
@@ -56,19 +83,23 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
           answers,
           startTime: new Date(startTime),
         }),
-      })
+      });
 
       if (res.ok) {
-        const data = await res.json()
-        router.push(`/student/result/${data.resultId}`)
+        const data = await res.json();
+        setSubmitted(true);
+        router.push(`/student/result/${data.resultId}`);
       } else {
-        setSubmitted(false)
+        submitRef.current = false;
+        setIsSubmitting(false);
       }
     } catch (error) {
-      console.error("[v0] Submit error:", error)
-      setSubmitted(false)
+      console.error("[v0] Submit error:", error);
+      submitRef.current = false;
+      setIsSubmitting(false);
     }
-  }
+  };
+
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
@@ -85,34 +116,38 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [submitted])
+  }, [])
 
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
   const question = exam.questions[currentQuestion]
 
   if (!question) {
-    return <div>Loading...</div>
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-primary text-primary-foreground border-b border-border sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold">{exam.title}</h1>
-          <div className={`text-lg font-mono font-bold ${timeLeft < 300 ? "text-red-400" : ""}`}>
+      <div className="bg-black text-white border-b border-black sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center flex-wrap gap-4">
+          <h1 className="text-lg sm:text-xl font-bold">{exam.title}</h1>
+          <div className={`text-base sm:text-lg font-mono font-bold ${timeLeft < 300 ? "text-red-400" : ""}`}>
             {minutes}:{seconds.toString().padStart(2, "0")}
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-sm text-muted-foreground">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+            <span className="text-xs sm:text-sm text-muted-foreground">
               Question {currentQuestion + 1} of {exam.questions.length}
             </span>
-            <span className="text-sm text-muted-foreground">Answered: {Object.keys(answers).length}</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">Answered: {Object.keys(answers).length}</span>
           </div>
           <div className="w-full bg-border rounded-full h-2">
             <div
@@ -122,16 +157,22 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-8 mb-8">
+        <div className="bg-card border border-border rounded-lg p-4 sm:p-8 mb-8">
+          {warningQuestionId === question.id && (
+            <div className="text-red-500 font-semibold mb-4">
+              You haven't answered this question yet!
+            </div>
+          )}
+
           {question.passage && (
-            <div className="bg-secondary bg-opacity-10 border-l-4 border-secondary p-4 mb-6">
-              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-mono">
+            <div className="bg-secondary bg-opacity-10 border-l-4 border-secondary p-3 sm:p-4 mb-6 overflow-x-auto">
+              <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-wrap font-mono">
                 {question.passage.content}
               </p>
             </div>
           )}
 
-          <h2 className="text-xl font-semibold text-foreground mb-6">{question.questionText}</h2>
+          <h2 className="text-base sm:text-xl font-semibold text-foreground mb-6">{question.questionText}</h2>
 
           <div className="space-y-3">
             {[
@@ -142,7 +183,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
             ].map((option) => (
               <label
                 key={option.label}
-                className="flex items-center gap-3 p-3 border border-border rounded cursor-pointer hover:bg-secondary hover:bg-opacity-20"
+                className="flex items-start gap-3 p-3 border border-border rounded cursor-pointer hover:bg-secondary hover:bg-opacity-20"
               >
                 <input
                   type="radio"
@@ -150,34 +191,36 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                   value={option.label}
                   checked={answers[question.id] === option.label}
                   onChange={() => handleAnswer(option.label)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 mt-1 flex-shrink-0"
                 />
-                <span className="font-mono font-semibold text-foreground">{option.label}.</span>
-                <span className="text-foreground">{option.text}</span>
+                <div className="flex-1">
+                  <span className="font-mono font-semibold text-foreground">{option.label}.</span>
+                  <span className="text-foreground ml-2">{option.text}</span>
+                </div>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="flex gap-4 justify-between">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between">
           <button
             onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
             disabled={currentQuestion === 0}
-            className="px-6 py-2 bg-secondary text-secondary-foreground rounded font-medium hover:opacity-90 disabled:opacity-50"
+            className="px-4 sm:px-6 py-2 bg-secondary text-secondary-foreground rounded font-medium hover:opacity-90 disabled:opacity-50 order-2 sm:order-1"
           >
             Previous
           </button>
 
-          <div className="flex gap-2 flex-wrap justify-center">
+          <div className="flex gap-2 flex-wrap justify-center order-3 sm:order-2">
             {exam.questions.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentQuestion(idx)}
-                className={`w-10 h-10 rounded font-medium ${idx === currentQuestion
-                    ? "bg-primary text-primary-foreground"
-                    : answers[exam.questions[idx].id]
-                      ? "bg-secondary text-secondary-foreground"
-                      : "bg-border text-foreground"
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded font-medium text-sm ${idx === currentQuestion
+                  ? "bg-primary text-primary-foreground"
+                  : answers[exam.questions[idx].id]
+                    ? "bg-secondary text-secondary-foreground"
+                    : "bg-border text-foreground"
                   }`}
               >
                 {idx + 1}
@@ -193,10 +236,19 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                 setCurrentQuestion(Math.min(exam.questions.length - 1, currentQuestion + 1))
               }
             }}
-            disabled={submitted}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded font-medium hover:opacity-90 disabled:opacity-50"
+            disabled={submitted || isSubmitting}
+            className="px-4 sm:px-6 py-2 bg-primary text-primary-foreground rounded font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2 order-1 sm:order-3"
           >
-            {currentQuestion === exam.questions.length - 1 ? "Submit" : "Next"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="hidden sm:inline">Submitting...</span>
+              </>
+            ) : currentQuestion === exam.questions.length - 1 ? (
+              "Submit"
+            ) : (
+              "Next"
+            )}
           </button>
         </div>
       </div>

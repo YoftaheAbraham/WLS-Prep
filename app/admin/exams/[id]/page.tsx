@@ -5,7 +5,6 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
-import { Loader2 } from "lucide-react"
 
 interface Passage {
   id: string
