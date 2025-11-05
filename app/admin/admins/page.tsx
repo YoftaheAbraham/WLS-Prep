@@ -262,23 +262,23 @@ export default function AddAdminsPage() {
           <h3 className="text-lg font-semibold text-foreground mb-4">How to Invite Admins</h3>
           <ol className="space-y-3 text-sm text-muted-foreground">
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">1</span>
+              <span className="w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">1</span>
               <span>Fill in admin name and email above</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">2</span>
+              <span className="w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">2</span>
               <span>Click "Create Admin Invitation" to generate credentials</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">3</span>
+              <span className="w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">3</span>
               <span>Copy the token and temporary password</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">4</span>
+              <span className="w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">4</span>
               <span>Share both with the admin securely</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="flex-shrink-0 w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">5</span>
+              <span className="w-6 h-6 bg-foreground text-background rounded-full text-xs flex items-center justify-center font-semibold">5</span>
               <span>
                 Admin signs up at{" "}
                 <Link href="/signup" className="text-foreground font-medium hover:underline">
