@@ -7,8 +7,15 @@ import { useParams } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
 import { Loader2 } from "lucide-react"
 
+interface Exam {
+  id: string
+  title: string
+  duration: number
+  canStart: boolean
+}
+
 export default function ExamSettingsPage({ params }: { params: Promise<{ id: string }> }) {
-  const [exam, setExam] = useState<any>(null)
+  const [exam, setExam] = useState<Exam | null>(null)
   const [title, setTitle] = useState("")
   const [duration, setDuration] = useState(0)
   const [canStart, setCanStart] = useState(false)
@@ -92,7 +99,7 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
 
     setDeleting(true)
     try {
-      const res = await fetch(`/api/admin/exams/${examId}/delete`, {
+      const res = await fetch(`/api/admin/exams/${examId}`, {
         method: "DELETE",
       })
 
@@ -160,7 +167,7 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
               min="1"
               max="480"
               value={duration}
-              onChange={(e) => setDuration(Number.parseInt(e.target.value))}
+              onChange={(e) => setDuration(Number.parseInt(e.target.value) || 0)}
               className="w-full px-4 py-2 bg-background border border-input rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="text-xs text-muted-foreground mt-1">1-480 minutes allowed</p>
