@@ -38,8 +38,10 @@ export default function LoginPage() {
       } else {
         router.push("/student")
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError("An error occurred")
+      const errorMessage = err instanceof Error ? err.message : "Unknown error"
+      console.error("Login error:", errorMessage)
     } finally {
       setLoading(false)
     }

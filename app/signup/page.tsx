@@ -52,9 +52,10 @@ export default function SignupPage() {
       } else {
         router.push("/student")
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError("An error occurred")
-      console.error(" Signup error:", err)
+      const errorMessage = err instanceof Error ? err.message : "Unknown error"
+      console.error("Signup error:", errorMessage)
     } finally {
       setLoading(false)
     }
@@ -121,7 +122,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 bg-background border border-input rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono text-xs"
               placeholder="Min 6 characters"
               required
             />

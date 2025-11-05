@@ -19,6 +19,15 @@ interface Exam {
   }
 }
 
+interface ExamResult {
+  id: string
+  score: number
+  submittedAt: Date
+  exam: {
+    title: string
+  }
+}
+
 export default async function StudentPage() {
   const user = await getCurrentUser()
 
@@ -49,7 +58,7 @@ export default async function StudentPage() {
     orderBy: { createdAt: "desc" },
   })
 
-  const userResults = await prisma.result.findMany({
+  const userResults: ExamResult[] = await prisma.result.findMany({
     where: { userId: user.id },
     include: { exam: true },
     orderBy: { submittedAt: "desc" },

@@ -5,11 +5,6 @@ import Link from "next/link"
 import ThemeToggle from "./theme-toggle"
 import { useState } from "react"
 
-interface NavLink {
-  href: string
-  label: string
-}
-
 export default function AdminNav() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -27,7 +22,7 @@ export default function AdminNav() {
     setIsMobileMenuOpen(false)
   }
 
-  const navLinks: NavLink[] = [
+  const navLinks = [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/exams", label: "Exams" },
     { href: "/admin/users", label: "Users" },
@@ -41,8 +36,8 @@ export default function AdminNav() {
         {/* Main Navigation Bar */}
         <div className="flex justify-between items-center py-3 sm:py-4">
           {/* Logo/Brand */}
-          <Link 
-            href="/admin" 
+          <Link
+            href="/admin"
             className="text-lg sm:text-xl font-bold hover:opacity-90 transition-opacity"
             onClick={closeMobileMenu}
           >
@@ -78,16 +73,22 @@ export default function AdminNav() {
               aria-label="Toggle menu"
             >
               <div className="w-6 h-6 flex flex-col justify-center gap-1">
-                <span className={`block h-0.5 w-6 bg-white transition-all ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
-                <span className={`block h-0.5 w-6 bg-white transition-all ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
-                <span className={`block h-0.5 w-6 bg-white transition-all ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`} />
+                <span
+                  className={`block h-0.5 w-6 bg-white transition-all ${isMobileMenuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+                />
+                <span className={`block h-0.5 w-6 bg-white transition-all ${isMobileMenuOpen ? "opacity-0" : ""}`} />
+                <span
+                  className={`block h-0.5 w-6 bg-white transition-all ${isMobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
+                />
               </div>
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
-        <div className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? 'max-h-96 pb-4' : 'max-h-0'}`}>
+        <div
+          className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${isMobileMenuOpen ? "max-h-96 pb-4" : "max-h-0"}`}
+        >
           <div className="flex flex-col space-y-3 border-t border-white border-opacity-20 pt-4">
             {navLinks.map((link) => (
               <Link

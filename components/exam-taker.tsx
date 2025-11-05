@@ -59,22 +59,23 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
       const savedSession = localStorage.getItem(storageKey)
       if (savedSession) {
         const sessionData: ExamSessionData = JSON.parse(savedSession)
-        
+
         // Validate that the saved session matches current exam
         if (sessionData.examId === exam.id && sessionData.userId === userId) {
           setAnswers(sessionData.answers)
           answersRef.current = sessionData.answers
           setCurrentQuestion(sessionData.currentQuestion)
           setStartTime(sessionData.startTime)
-          
+
           // Calculate time left based on elapsed time
           const elapsedSeconds = Math.floor((Date.now() - sessionData.startTime) / 1000)
           const calculatedTimeLeft = Math.max(0, exam.duration * 60 - elapsedSeconds + 30)
           setTimeLeft(calculatedTimeLeft)
         }
       }
-    } catch (error) {
-      console.error("Error loading exam session from localStorage:", error)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      console.error("Error loading exam session from localStorage:", errorMessage)
       // If there's an error loading, start fresh but keep the buffer time
       setTimeLeft(exam.duration * 60 + 30)
     } finally {
@@ -92,13 +93,14 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
       answers: answersRef.current,
       startTime,
       currentQuestion,
-      timeLeft
+      timeLeft,
     }
 
     try {
       localStorage.setItem(storageKey, JSON.stringify(sessionData))
-    } catch (error) {
-      console.error("Error saving exam session to localStorage:", error)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      console.error("Error saving exam session to localStorage:", errorMessage)
     }
   }, [answers, currentQuestion, timeLeft, startTime, exam.id, userId, storageKey, isLoading])
 
@@ -106,15 +108,16 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   const clearExamSession = () => {
     try {
       localStorage.removeItem(storageKey)
-    } catch (error) {
-      console.error("Error clearing exam session from localStorage:", error)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      console.error("Error clearing exam session from localStorage:", errorMessage)
     }
   }
 
   // Update handleAnswer to clear warning automatically
   const handleAnswer = (answer: string) => {
     const questionId = exam.questions[currentQuestion].id
-    setAnswers(prev => {
+    setAnswers((prev) => {
       const newAnswers = { ...prev, [questionId]: answer }
       answersRef.current = newAnswers // update ref
       return newAnswers
@@ -124,7 +127,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
       setWarningQuestionId(null)
     }
 
-    const remaining = exam.questions.filter(q => !answersRef.current[q.id] && q.id !== questionId)
+    const remaining = exam.questions.filter((q) => !answersRef.current[q.id] && q.id !== questionId)
     if (remaining.length === 0) {
       setCurrentQuestion(exam.questions.length - 1)
     }
@@ -132,11 +135,11 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
 
   const handleSubmit = async (forceSubmit = false) => {
     const currentAnswers = answersRef.current
-    const unanswered = exam.questions.filter(q => !currentAnswers[q.id])
+    const unanswered = exam.questions.filter((q) => !currentAnswers[q.id])
 
     if (unanswered.length > 0 && !forceSubmit) {
       const firstUnanswered = unanswered[0]
-      setCurrentQuestion(exam.questions.findIndex(q => q.id === firstUnanswered.id))
+      setCurrentQuestion(exam.questions.findIndex((q) => q.id === firstUnanswered.id))
       setWarningQuestionId(firstUnanswered.id)
       window.scrollTo({ top: 0, behavior: "smooth" })
       return
@@ -167,8 +170,9 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
         submitRef.current = false
         setIsSubmitting(false)
       }
-    } catch (error) {
-      console.error("Submit error:", error)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error"
+      console.error("Submit error:", errorMessage)
       submitRef.current = false
       setIsSubmitting(false)
     }
@@ -251,12 +255,9 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
         </div>
 
         {warningQuestionId === question.id && (
-          <div className="text-red-500 font-semibold mb-4">
-            You haven't answered this question yet!
-          </div>
+          <div className="text-red-500 font-semibold mb-4">You haven't answered this question yet!</div>
         )}
         <div className="bg-card border border-border rounded-lg p-4 sm:p-8 mb-8">
-
           {question.passage && (
             <div className="bg-secondary bg-opacity-10 border-l-4 border-secondary p-3 sm:p-4 mb-6 overflow-x-auto">
               <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-wrap font-mono">
@@ -324,12 +325,13 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
               <button
                 key={idx}
                 onClick={() => setCurrentQuestion(idx)}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded font-medium text-sm ${idx === currentQuestion
-                  ? "bg-primary text-primary-foreground"
-                  : answers[exam.questions[idx].id]
-                    ? "bg-secondary text-secondary-foreground"
-                    : "bg-gray-400 text-foreground"
-                  }`}
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded font-medium text-sm ${
+                  idx === currentQuestion
+                    ? "bg-primary text-primary-foreground"
+                    : answers[exam.questions[idx].id]
+                      ? "bg-secondary text-secondary-foreground"
+                      : "bg-gray-400 text-foreground"
+                }`}
               >
                 {idx + 1}
               </button>
