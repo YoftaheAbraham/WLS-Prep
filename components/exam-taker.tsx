@@ -299,7 +299,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                   value={option.label}
                   checked={answers[question.id] === option.label}
                   onChange={() => handleAnswer(option.label)}
-                  className="w-4 h-4 mt-1 flex-shrink-0"
+                  className="w-4 h-4 mt-1"
                 />
                 <div className="flex-1">
                   <span className="font-mono font-semibold text-foreground">{option.label}.</span>
