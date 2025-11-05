@@ -4,13 +4,25 @@ import { redirect } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
 import Link from "next/link"
 
+interface Exam {
+  id: string
+  title: string
+  duration: number
+  canStart: boolean
+  createdAt: Date
+  _count: {
+    questions: number
+    results: number
+  }
+}
+
 export default async function ExamsPage() {
   const user = await getCurrentUser()
   if (!user || user.role !== "ADMIN") {
     redirect("/login")
   }
 
-  const exams = await prisma.exam.findMany({
+  const exams: Exam[] = await prisma.exam.findMany({
     include: { _count: { select: { questions: true, results: true } } },
     orderBy: { createdAt: "desc" },
   })
