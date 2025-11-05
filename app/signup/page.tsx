@@ -89,7 +89,7 @@ export default function SignupPage() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Invitation Token (Optional - for students)
+              Invitation Token
             </label>
             <input
               type="text"

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useParams } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
+import { Loader2 } from "lucide-react"
 
 export default function ExamSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const [exam, setExam] = useState<any>(null)
@@ -12,6 +13,8 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
   const [duration, setDuration] = useState(0)
   const [canStart, setCanStart] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const router = useRouter()
@@ -41,14 +44,17 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
     e.preventDefault()
     setError("")
     setSuccess("")
+    setUpdating(true)
 
     if (!title.trim()) {
       setError("Title is required")
+      setUpdating(false)
       return
     }
 
     if (duration < 1 || duration > 480) {
       setError("Duration must be between 1 and 480 minutes")
+      setUpdating(false)
       return
     }
 
@@ -74,6 +80,8 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
       }
     } catch (err) {
       setError("Failed to update exam")
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -82,6 +90,7 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
       return
     }
 
+    setDeleting(true)
     try {
       const res = await fetch(`/api/admin/exams/${examId}/delete`, {
         method: "DELETE",
@@ -92,13 +101,20 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
       } else {
         const err = await res.json()
         setError(err.error || "Failed to delete exam")
+        setDeleting(false)
       }
     } catch (err) {
       setError("Failed to delete exam")
+      setDeleting(false)
     }
   }
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <span className="ml-2">Loading exam settings...</span>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,13 +133,13 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
         </div>
 
         {error && (
-          <div className="bg-destructive bg-opacity-10 border border-destructive rounded p-4 mb-6 text-destructive">
+          <div className="border border-destructive rounded p-4 mb-6 text-destructive">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-primary bg-opacity-10 border border-primary rounded p-4 mb-6 text-primary">{success}</div>
+          <div className="bg-green-600 bg-opacity-10 border border-primary rounded p-4 mb-6 text-primary">{success}</div>
         )}
 
         <form onSubmit={handleUpdate} className="bg-card border border-border rounded-lg p-6 space-y-6 mb-8">
@@ -165,9 +181,17 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
 
           <button
             type="submit"
-            className="w-full bg-primary text-primary-foreground py-2 rounded font-medium hover:opacity-90"
+            disabled={updating}
+            className="w-full bg-primary text-primary-foreground py-2 rounded font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Update Exam Settings
+            {updating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Exam Settings"
+            )}
           </button>
         </form>
 
@@ -178,9 +202,17 @@ export default function ExamSettingsPage({ params }: { params: Promise<{ id: str
           </p>
           <button
             onClick={handleDelete}
-            className="w-full bg-destructive text-white py-2 rounded font-medium hover:opacity-90"
+            disabled={deleting}
+            className="w-full bg-destructive text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Delete Exam
+            {deleting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Exam"
+            )}
           </button>
         </div>
       </div>

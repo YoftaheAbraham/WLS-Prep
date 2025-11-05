@@ -5,6 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import AdminNav from "@/components/admin-nav"
+import { Loader2 } from "lucide-react"
 
 export default function CreateExamPage() {
   const [title, setTitle] = useState("")
@@ -67,9 +68,16 @@ export default function CreateExamPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-primary-foreground py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+            className="w-full bg-primary text-primary-foreground py-2 rounded font-medium hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? "Creating..." : "Create Exam"}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Exam"
+            )}
           </button>
         </form>
       </div>

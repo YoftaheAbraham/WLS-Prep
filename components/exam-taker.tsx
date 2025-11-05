@@ -328,7 +328,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                   ? "bg-primary text-primary-foreground"
                   : answers[exam.questions[idx].id]
                     ? "bg-secondary text-secondary-foreground"
-                    : "bg-border text-foreground"
+                    : "bg-gray-400 text-foreground"
                   }`}
               >
                 {idx + 1}

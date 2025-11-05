@@ -77,13 +77,13 @@ export default function AddAdminsPage() {
         <p className="text-muted-foreground mb-8">Create new admin accounts with invitation tokens</p>
 
         {error && (
-          <div className="bg-destructive bg-opacity-10 border border-destructive rounded p-4 mb-6 text-destructive">
+          <div className=" border border-destructive rounded p-4 mb-6 text-destructive">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-primary bg-opacity-10 border border-primary rounded p-4 mb-6 text-primary">{success}</div>
+          <div className="bg-green-500 bg-opacity-10 border border-primary rounded p-4 mb-6 text-primary">{success}</div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

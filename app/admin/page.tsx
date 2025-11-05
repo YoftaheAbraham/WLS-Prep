@@ -15,7 +15,7 @@ export default async function AdminPage() {
       <AdminNav />
       <div className="max-w-6xl mx-auto p-6">
         <h1 className="text-3xl font-bold text-foreground mb-8">Admin Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-card border border-border rounded-lg p-6">
             <h2 className="text-lg font-semibold text-foreground mb-2">Create Exam</h2>
             <p className="text-sm text-muted-foreground mb-4">Add a new exam with questions</p>
