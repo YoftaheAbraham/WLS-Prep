@@ -6,7 +6,7 @@ import { generateToken, generateTempPassword } from "@/lib/token"
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
-    
+
     // Enhanced authorization check
     if (!user) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const trimmedEmail = email.toLowerCase().trim()
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    
+
     if (!emailRegex.test(trimmedEmail)) {
       return NextResponse.json(
         { error: "Please provide a valid email address" },
@@ -135,30 +135,32 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 201 })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[ADMIN_INVITATION] Error creating admin invitation:", error)
 
-    // Handle specific Prisma errors
-    if (error.code === "P2002") {
-      return NextResponse.json(
-        { error: "An invitation with this email already exists" },
-        { status: 409 }
-      )
-    }
+    if (error instanceof Error) {
+      // Handle specific Prisma errors
+      if ('code' in error && error.code === "P2002") {
+        return NextResponse.json(
+          { error: "An invitation with this email already exists" },
+          { status: 409 }
+        )
+      }
 
-    if (error.code === "P2003") {
-      return NextResponse.json(
-        { error: "Invalid user reference. Please try logging in again." },
-        { status: 400 }
-      )
-    }
+      if ('code' in error && error.code === "P2003") {
+        return NextResponse.json(
+          { error: "Invalid user reference. Please try logging in again." },
+          { status: 400 }
+        )
+      }
 
-    // Handle validation errors
-    if (error.name === 'PrismaClientValidationError') {
-      return NextResponse.json(
-        { error: "Invalid data provided. Please check your input." },
-        { status: 400 }
-      )
+      // Handle validation errors
+      if (error.name === 'PrismaClientValidationError') {
+        return NextResponse.json(
+          { error: "Invalid data provided. Please check your input." },
+          { status: 400 }
+        )
+      }
     }
 
     // Generic error response
@@ -172,7 +174,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -194,8 +196,8 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Build where clause
-    const where: any = { 
-      role: "ADMIN" 
+    const where: any = {
+      role: "ADMIN"
     }
 
     if (!includeExpired) {
@@ -253,7 +255,7 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getCurrentUser()
-    
+
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Unauthorized" },
