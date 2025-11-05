@@ -37,7 +37,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
     <div className="min-h-screen bg-background">
       <nav className="bg-black text-white border-b border-black sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold">LiqaPrep Student</h1>
+          <h1 className="text-xl font-bold">WLSPrep Student</h1>
           <Link href="/student" className="text-white hover:underline">
             Back to Exams
           </Link>

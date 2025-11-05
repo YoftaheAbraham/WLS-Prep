@@ -25,7 +25,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[v0] Error deleting exam:", error)
+    console.error(" Error deleting exam:", error)
     return NextResponse.json({ error: "Failed to delete exam" }, { status: 500 })
   }
 }

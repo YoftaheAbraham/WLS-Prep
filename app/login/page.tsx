@@ -48,7 +48,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card border border-border rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6 text-center">LiqaPrep</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-6 text-center">WLSPrep</h1>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>

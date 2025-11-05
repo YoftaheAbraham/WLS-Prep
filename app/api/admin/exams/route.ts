@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ exam })
   } catch (error) {
-    console.error("[v0] Error creating exam:", error)
+    console.error(" Error creating exam:", error)
     return NextResponse.json({ error: "Failed to create exam" }, { status: 500 })
   }
 }

@@ -8,14 +8,34 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(cuid())
+  id              String        @id @default(cuid())
   name            String
-  email           String   @unique
+  email           String        @unique
   password        String
-  role            Role     @default(STUDENT)
-  invitationToken String?
+  role            Role          @default(STUDENT)
+  isVerified      Boolean       @default(false)
+  invitationToken String?       @unique
+  tempPassword    String?       // For admins
+  invitations     Invitation[]
   results         Result[]
-  createdAt       DateTime @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String
+  name      String
+  token     String   @unique
+  role      Role
+  createdBy String   // Admin ID who created this
+  admin     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  accepted  Boolean  @default(false)
+  acceptedAt DateTime?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@unique([email, role])
 }
 
 model Exam {

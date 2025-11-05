@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -11,6 +10,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [invitationToken, setInvitationToken] = useState("")
+  const [role, setRole] = useState<"ADMIN" | "STUDENT">("STUDENT")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -21,6 +21,12 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
+      if (!invitationToken.trim()) {
+        setError("Invitation token is required")
+        setLoading(false)
+        return
+      }
+
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -28,8 +34,8 @@ export default function SignupPage() {
           name,
           email,
           password,
-          invitationToken: invitationToken || undefined,
-          role: invitationToken ? "STUDENT" : "ADMIN",
+          invitationToken,
+          role,
         }),
       })
 
@@ -40,9 +46,15 @@ export default function SignupPage() {
         return
       }
 
-      router.push("/login")
+      // Redirect based on role
+      if (data.user.role === "ADMIN") {
+        router.push("/admin")
+      } else {
+        router.push("/student")
+      }
     } catch (err) {
       setError("An error occurred")
+      console.error(" Signup error:", err)
     } finally {
       setLoading(false)
     }
@@ -51,9 +63,36 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card border border-border rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-foreground mb-6 text-center">Create Account</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2 text-center">Create Account</h1>
+        <p className="text-sm text-muted-foreground text-center mb-6">Use your invitation token to sign up</p>
 
         <form onSubmit={handleSignup} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Account Type</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="STUDENT"
+                  checked={role === "STUDENT"}
+                  onChange={(e) => setRole(e.target.value as "STUDENT" | "ADMIN")}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-foreground">Student</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  value="ADMIN"
+                  checked={role === "ADMIN"}
+                  onChange={(e) => setRole(e.target.value as "STUDENT" | "ADMIN")}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm text-foreground">Admin</span>
+              </label>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Name</label>
             <input
@@ -83,23 +122,25 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 bg-background border border-input rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Min 6 characters"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Invitation Token
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">Invitation Token</label>
             <input
               type="text"
               value={invitationToken}
               onChange={(e) => setInvitationToken(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-3 py-2 bg-background border border-input rounded text-foreground focus:outline-none focus:ring-2 focus:ring-primary font-mono text-xs"
+              placeholder="Paste your token here"
+              required
             />
+            <p className="text-xs text-muted-foreground mt-1">Check your email or ask your admin for the token</p>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive p-2 rounded">{error}</p>}
 
           <button
             type="submit"

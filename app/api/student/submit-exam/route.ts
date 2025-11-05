@@ -66,9 +66,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ resultId: result.id })
   } catch (error) {
-    console.error("[v0] Submit error:", error)
+    console.error(" Submit error:", error)
     return NextResponse.json({ error: "Failed to submit exam" }, { status: 500 })
   }
 }
-
-

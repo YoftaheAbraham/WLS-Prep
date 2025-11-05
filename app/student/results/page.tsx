@@ -21,7 +21,7 @@ export default async function StudentResultsPage() {
       {/* Navigation */}
       <nav className="bg-black text-white border-b border-black sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
-          <h1 className="text-2xl font-bold text-center sm:text-left">LiqaPrep Student</h1>
+          <h1 className="text-2xl font-bold text-center sm:text-left">WLSPrep Student</h1>
           <div className="flex flex-wrap justify-center sm:justify-end items-center gap-3">
             <Link
               href="/student"

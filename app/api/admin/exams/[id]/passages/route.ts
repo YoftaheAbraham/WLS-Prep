@@ -26,7 +26,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     return NextResponse.json({ passage })
   } catch (error) {
-    console.error("[v0] Error creating passage:", error)
+    console.error(" Error creating passage:", error)
     return NextResponse.json({ error: "Failed to create passage" }, { status: 500 })
   }
 }

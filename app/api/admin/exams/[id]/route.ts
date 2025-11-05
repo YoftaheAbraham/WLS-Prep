@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     return NextResponse.json({ exam, questions, passages })
   } catch (error) {
-    console.error("[v0] Error fetching exam:", error)
+    console.error(" Error fetching exam:", error)
     return NextResponse.json({ error: "Failed to fetch exam" }, { status: 500 })
   }
 }
@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     return NextResponse.json({ exam })
   } catch (error) {
-    console.error("[v0] Error updating exam:", error)
+    console.error(" Error updating exam:", error)
     return NextResponse.json({ error: "Failed to update exam" }, { status: 500 })
   }
 }

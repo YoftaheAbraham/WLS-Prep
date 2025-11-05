@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     return NextResponse.json({ question })
   } catch (error) {
-    console.error("[v0] Error creating question:", error)
+    console.error(" Error creating question:", error)
     return NextResponse.json({ error: "Failed to create question" }, { status: 500 })
   }
 }
