@@ -3,6 +3,16 @@ import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import Link from "next/link"
 
+interface ResultWithExam {
+  id: string
+  score: number
+  submittedAt: Date
+  exam: {
+    title: string
+    duration: number
+  }
+}
+
 export default async function StudentResultsPage() {
   const user = await getCurrentUser()
 
@@ -10,7 +20,7 @@ export default async function StudentResultsPage() {
     redirect("/login")
   }
 
-  const results = await prisma.result.findMany({
+  const results: ResultWithExam[] = await prisma.result.findMany({
     where: { userId: user.id },
     include: { exam: true },
     orderBy: { submittedAt: "desc" },
@@ -55,7 +65,7 @@ export default async function StudentResultsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {results.map((result) => (
+            {results.map((result: ResultWithExam) => (
               <div
                 key={result.id}
                 className="bg-card border border-border rounded-lg p-4 sm:p-6 hover:border-foreground/30 transition"
