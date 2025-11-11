@@ -5,12 +5,14 @@ import { cookies } from "next/headers"
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    let { email, password }: {email: string; password: string} = await request.json()
 
+    
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
-
+    
+    email = email.toLocaleLowerCase();
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) {
       console.log(" User not found:", email)
