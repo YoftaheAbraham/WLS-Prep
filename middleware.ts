@@ -25,8 +25,6 @@ export function middleware(request: NextRequest) {
     )
     return NextResponse.redirect(redirectUrl)
   }
-
-  console.log("Role:", user?.role)
   return NextResponse.next()
 }
 
