@@ -210,6 +210,120 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
   const seconds = timeLeft % 60
   const question = exam.questions[currentQuestion]
 
+  // Add this function before your component
+  // Enhanced formatting function with comprehensive math support
+  const formatMathText = (text: string) => {
+    if (!text) return text;
+
+    return text
+      // Superscripts
+      .replace(/\^2/g, '²')
+      .replace(/\^3/g, '³')
+      .replace(/\^4/g, '⁴')
+      .replace(/\^5/g, '⁵')
+      .replace(/\^6/g, '⁶')
+      .replace(/\^7/g, '⁷')
+      .replace(/\^8/g, '⁸')
+      .replace(/\^9/g, '⁹')
+      .replace(/\^0/g, '⁰')
+      .replace(/\^ex/g, 'ᵉˣ')
+      .replace(/\^x/g, 'ˣ')
+      .replace(/\^y/g, 'ʸ')
+      .replace(/\^z/g, 'ᶻ')
+      .replace(/\^n/g, 'ⁿ')
+      .replace(/\^([a-zA-Z])/g, (_, char) => {
+        const superscripts: { [key: string]: string } = {
+          'a': 'ᵃ', 'b': 'ᵇ', 'c': 'ᶜ', 'd': 'ᵈ', 'e': 'ᵉ', 'f': 'ᶠ', 'g': 'ᵍ',
+          'h': 'ʰ', 'i': 'ⁱ', 'j': 'ʲ', 'k': 'ᵏ', 'l': 'ˡ', 'm': 'ᵐ', 'n': 'ⁿ',
+          'o': 'ᵒ', 'p': 'ᵖ', 'r': 'ʳ', 's': 'ˢ', 't': 'ᵗ', 'u': 'ᵘ', 'v': 'ᵛ',
+          'w': 'ʷ', 'x': 'ˣ', 'y': 'ʸ', 'z': 'ᶻ'
+        };
+        return superscripts[char.toLowerCase()] || `^${char}`;
+      })
+
+      // Subscripts
+      .replace(/_1/g, '₁')
+      .replace(/_2/g, '₂')
+      .replace(/_3/g, '₃')
+      .replace(/_4/g, '₄')
+      .replace(/_5/g, '₅')
+      .replace(/_6/g, '₆')
+      .replace(/_7/g, '₇')
+      .replace(/_8/g, '₈')
+      .replace(/_9/g, '₉')
+      .replace(/_0/g, '₀')
+      .replace(/_x/g, 'ₓ')
+      .replace(/_y/g, 'ᵧ')
+      .replace(/_n/g, 'ₙ')
+
+      // Roots
+      .replace(/\\sqrt\[4\]/g, '∜')
+      .replace(/\\sqrt\[3\]/g, '∛')
+      .replace(/\\sqrt/g, '√')
+      .replace(/\\cbrt/g, '∛')
+      .replace(/\\qbrt/g, '∜')
+
+      // Functions and constants
+      .replace(/\\sgn/g, 'sgn')
+      .replace(/\\ln/g, 'ln')
+      .replace(/\\log/g, 'log')
+      .replace(/\\pi/g, 'π')
+      .replace(/\\Pi/g, 'Π')
+      .replace(/\\theta/g, 'θ')
+      .replace(/\\alpha/g, 'α')
+      .replace(/\\beta/g, 'β')
+      .replace(/\\gamma/g, 'γ')
+      .replace(/\\delta/g, 'δ')
+      .replace(/\\epsilon/g, 'ε')
+      .replace(/\\phi/g, 'φ')
+      .replace(/\\omega/g, 'ω')
+      .replace(/\\Omega/g, 'Ω')
+      .replace(/\\sum/g, '∑')
+      .replace(/\\prod/g, '∏')
+      .replace(/\\int/g, '∫')
+      .replace(/\\infty/g, '∞')
+
+      // Operators
+      .replace(/\\times/g, '×')
+      .replace(/\\div/g, '÷')
+      .replace(/\\pm/g, '±')
+      .replace(/\\mp/g, '∓')
+      .replace(/\\cdot/g, '·')
+      .replace(/\\circ/g, '∘')
+
+      // Relations
+      .replace(/\\leq/g, '≤')
+      .replace(/\\geq/g, '≥')
+      .replace(/\\neq/g, '≠')
+      .replace(/\\approx/g, '≈')
+      .replace(/\\equiv/g, '≡')
+      .replace(/\\propto/g, '∝')
+      .replace(/\\sim/g, '∼')
+
+      // Sets
+      .replace(/\\in/g, '∈')
+      .replace(/\\notin/g, '∉')
+      .replace(/\\subset/g, '⊂')
+      .replace(/\\supset/g, '⊃')
+      .replace(/\\cup/g, '∪')
+      .replace(/\\cap/g, '∩')
+      .replace(/\\emptyset/g, '∅')
+
+      // Calculus
+      .replace(/\\partial/g, '∂')
+      .replace(/\\nabla/g, '∇')
+      .replace(/\\Delta/g, 'Δ')
+
+      // Logic
+      .replace(/\\forall/g, '∀')
+      .replace(/\\exists/g, '∃')
+      .replace(/\\neg/g, '¬')
+      .replace(/\\land/g, '∧')
+      .replace(/\\lor/g, '∨')
+      .replace(/\\implies/g, '⇒')
+      .replace(/\\iff/g, '⇔');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -267,20 +381,36 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
           )}
 
           <h2 className="text-base sm:text-xl font-semibold text-foreground mb-6">
-            <p className="whitespace-pre-wrap">
+            <div className="whitespace-pre-wrap">
               {question.questionText.split(/({{.*?}})/g).map((part, idx) => {
                 if (part.startsWith("{{") && part.endsWith("}}")) {
-                  // remove the curly braces and style as small text
                   const content = part.slice(2, -2)
                   return (
                     <span key={idx} className="text-xs text-muted-foreground ml-1">
-                      {content}
+                      {formatMathText(content)}
                     </span>
                   )
                 }
-                return <span key={idx}>{part}</span>
+
+                // Apply both math formatting and bold formatting
+                const formattedPart = formatMathText(part);
+
+                // Convert **text** to bold while preserving other content
+                const partsWithBold = formattedPart.split(/(\*\*.*?\*\*)/g);
+
+                return (
+                  <span key={idx}>
+                    {partsWithBold.map((boldPart, boldIdx) => {
+                      if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+                        const boldContent = boldPart.slice(2, -2);
+                        return <strong key={boldIdx}>{boldContent}</strong>;
+                      }
+                      return <span key={boldIdx}>{boldPart}</span>;
+                    })}
+                  </span>
+                );
               })}
-            </p>
+            </div>
           </h2>
 
           <div className="space-y-3">
@@ -325,13 +455,12 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
               <button
                 key={idx}
                 onClick={() => setCurrentQuestion(idx)}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded font-medium text-sm ${
-                  idx === currentQuestion
-                    ? "bg-primary text-primary-foreground"
-                    : answers[exam.questions[idx].id]
-                      ? "bg-secondary text-secondary-foreground"
-                      : "bg-gray-400 text-foreground"
-                }`}
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded font-medium text-sm ${idx === currentQuestion
+                  ? "bg-primary text-primary-foreground"
+                  : answers[exam.questions[idx].id]
+                    ? "bg-secondary text-secondary-foreground"
+                    : "bg-gray-400 text-foreground"
+                  }`}
               >
                 {idx + 1}
               </button>
