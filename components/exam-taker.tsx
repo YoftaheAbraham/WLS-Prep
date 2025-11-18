@@ -435,12 +435,33 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                 <div className="flex-1">
                   <span className="font-mono font-semibold text-foreground">{option.label}.</span>
                   <span className="text-foreground ml-2">
-                    {option.text.split(/(\*\*.*?\*\*)/g).map((part, idx) => {
-                      if (part.startsWith('**') && part.endsWith('**')) {
-                          const boldContent = part.slice(2, -2);
-                          return <strong key={idx}>{boldContent}</strong>;
+                    {option.text.split(/({{.*?}})/g).map((part, idx) => {
+                      if (part.startsWith("{{") && part.endsWith("}}")) {
+                        const content = part.slice(2, -2)
+                        return (
+                          <span key={idx} className="text-xs text-muted-foreground ml-1">
+                            {formatMathText(content)}
+                          </span>
+                        )
                       }
-                      return <span key={idx}>{part}</span>;
+
+                      // Apply both math formatting and bold formatting
+                      const formattedPart = formatMathText(part);
+
+                      // Convert **text** to bold while preserving other content
+                      const partsWithBold = formattedPart.split(/(\*\*.*?\*\*)/g);
+
+                      return (
+                        <span key={idx}>
+                          {partsWithBold.map((boldPart, boldIdx) => {
+                            if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+                              const boldContent = boldPart.slice(2, -2);
+                              return <strong key={boldIdx}>{boldContent}</strong>;
+                            }
+                            return <span key={boldIdx}>{boldPart}</span>;
+                          })}
+                        </span>
+                      );
                     })}
                   </span>
                 </div>
