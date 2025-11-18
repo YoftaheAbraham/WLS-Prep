@@ -434,7 +434,15 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                 />
                 <div className="flex-1">
                   <span className="font-mono font-semibold text-foreground">{option.label}.</span>
-                  <span className="text-foreground ml-2">{option.text}</span>
+                  <span className="text-foreground ml-2">
+                    {option.text.split(/(\*\*.*?\*\*)/g).map((part, idx) => {
+                      if (part.startsWith('**') && part.endsWith('**')) {
+                          const boldContent = part.slice(2, -2);
+                          return <strong key={idx}>{boldContent}</strong>;
+                      }
+                      return <span key={idx}>{part}</span>;
+                    })}
+                  </span>
                 </div>
               </label>
             ))}
