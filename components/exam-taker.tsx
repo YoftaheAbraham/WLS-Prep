@@ -216,6 +216,16 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
     if (!text) return text;
 
     return text
+      .replace(/_{([^}]+)}/g, (_, content) => {
+        const subscriptMap: { [key: string]: string } = {
+          'i': 'ᵢ', 'j': 'ⱼ', 'k': 'ₖ', '0': '₀', '1': '₁', '2': '₂', '3': '₃',
+          '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'
+        };
+        return subscriptMap[content] || `_${content}`;
+      })
+
+      // Your existing replacements...
+      .replace(/\\sum/g, '∑')
       // Superscripts
       .replace(/\^2/g, '²')
       .replace(/\^3/g, '³')
@@ -445,7 +455,7 @@ export default function ExamTaker({ exam, userId }: ExamTakerProps) {
                         )
                       }
 
-                      // Apply both math formatting and bold formatting
+                      // Apply math formatting
                       const formattedPart = formatMathText(part);
 
                       // Convert **text** to bold while preserving other content
